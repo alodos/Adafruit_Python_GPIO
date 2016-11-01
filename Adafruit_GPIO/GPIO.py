@@ -408,11 +408,13 @@ class AdafruitMinnowAdapter(BaseGPIO):
 class SUNXIGPIOAdapter(BaseGPIO):
     """GPIO implementation for the Allwinner sunxi platform using the pySUNXI.SUNXI_GPIO library."""
     """
-    See pySUNXI library source: 
+    See pySUNXI library source and install: 
         https://github.com/ruisebastiao/pySUNXI
         http://dl.cubieboard.org/software/libs/pySUNXI-0.1.12.tar.gz
 
     Using GPIO:
+
+    import SUNXI_GPIO
 
     #init module
     SUNXI_GPIO.init()
