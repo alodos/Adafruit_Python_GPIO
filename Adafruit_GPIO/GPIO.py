@@ -488,8 +488,9 @@ class SUNXIGPIOAdapter(BaseGPIO):
 def get_platform_gpio(**keywords):
     """Attempt to return a GPIO instance for the platform which the code is being
     executed on.  Currently supports only the Raspberry Pi using the RPi.GPIO
-    library and Beaglebone Black using the Adafruit_BBIO library.  Will throw an
-    exception if a GPIO instance can't be created for the current platform.  The
+    library, Beaglebone Black using the Adafruit_BBIO library and Allwinner sunxi
+    platform devices (Cubieboard) using the pySUNXI.SUNXI_GPIO library. Will throw an
+    exception if a GPIO instance can't be created for the current platform. The
     returned GPIO object is an instance of BaseGPIO.
     """
     plat = Platform.platform_detect()
@@ -502,5 +503,8 @@ def get_platform_gpio(**keywords):
     elif plat == Platform.MINNOWBOARD:
         import mraa
         return AdafruitMinnowAdapter(mraa, **keywords)
+    elif plat == Platform.SUNXI:
+        import SUNXI_GPIO
+        return SUNXIGPIOAdapter(SUNXI_GPIO, **keywords)
     elif plat == Platform.UNKNOWN:
         raise RuntimeError('Could not determine platform.')
