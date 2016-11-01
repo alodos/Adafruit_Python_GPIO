@@ -72,11 +72,11 @@ class BaseGPIO(object):
         return self.input(pin) == LOW
 
 
-# Basic implementation of multiple pin methods just loops through pins and
-# processes each one individually. This is not optimal, but derived classes can
-# provide a more optimal implementation that deals with groups of pins
-# simultaneously.
-# See MCP230xx or PCF8574 classes for examples of optimized implementations.
+    # Basic implementation of multiple pin methods just loops through pins and
+    # processes each one individually. This is not optimal, but derived classes can
+    # provide a more optimal implementation that deals with groups of pins
+    # simultaneously.
+    # See MCP230xx or PCF8574 classes for examples of optimized implementations.
 
     def output_pins(self, pins):
         """Set multiple pins high or low at once.  Pins should be a dict of pin
@@ -143,7 +143,7 @@ class BaseGPIO(object):
         raise NotImplementedError
 
 
-# helper functions useful to derived classes
+    # helper functions useful to derived classes
 
     def _validate_pin(self, pin):
         # Raise an exception if pin is outside the range of allowed values.
@@ -404,6 +404,88 @@ class AdafruitMinnowAdapter(BaseGPIO):
         FALLING or BOTH.
         """
         self.bbio_gpio.wait_for_edge(self.mraa_gpio.Gpio(pin), self._edge_mapping[edge])
+
+class SUNXIGPIOAdapter(BaseGPIO):
+    """GPIO implementation for the Allwinner sunxi platform using the pySUNXI.SUNXI_GPIO library."""
+    """
+    See pySUNXI library source and install: 
+        https://github.com/ruisebastiao/pySUNXI
+        http://dl.cubieboard.org/software/libs/pySUNXI-0.1.12.tar.gz
+
+    Using GPIO:
+
+    import SUNXI_GPIO
+
+    #init module
+    SUNXI_GPIO.init()
+
+    #configure module
+    SUNXI_GPIO.setcfg(SUNXI_GPIO.PIN#, SUNXI_GPIO.OUT)
+    SUNXI_GPIO.setcfg(SUNXI_GPIO.PIN#, SUNXI_GPIO.IN)
+
+    #read the current GPIO configuration
+    config = SUNXI_GPIO.getcfg(SUNXI_GPIO.PIN#)
+
+    #set GPIO high
+    SUNXI_GPIO.output(SUNXI_GPIO.PIN#, SUNXI_GPIO.HIGH)
+
+    #set GPIO low
+    SUNXI_GPIO.output(SUNXI_GPIO.PIN#, SUNXI_GPIO.LOW)
+
+    #read input
+    state = SUNXI_GPIO.input(SUNXI_GPIO.PIN#)
+
+    #cleanup 
+    SUNXI_GPIO.cleanup()
+    """
+
+    def __init__(self, sunxi_gpio, mode=None):
+        self.sunxi_gpio = sunxi_gpio
+
+        # Init SUNXI_GPIO module
+        self.sunxi_gpio.init()
+
+        # Define mapping of Adafruit GPIO library constants to pySUNXI.SUNXI_GPIO constants.
+        self._dir_mapping = { OUT:      sunxi_gpio.OUT,
+                              IN:       sunxi_gpio.IN }
+        # Not supported by SUNXI_GPIO
+        #self._pud_mapping = { PUD_OFF:  sunxi_gpio.PUD_OFF,
+        #                      PUD_DOWN: sunxi_gpio.PUD_DOWN,
+        #                      PUD_UP:   sunxi_gpio.PUD_UP }
+        #self._edge_mapping = { RISING:  sunxi_gpio.RISING,
+        #                       FALLING: sunxi_gpio.FALLING,
+        #                       BOTH:    sunxi_gpio.BOTH }
+
+    def setup(self, pin, mode, pull_up_down=PUD_OFF):
+        """Set the input or output mode for a specified pin.  Mode should be
+        either OUTPUT or INPUT.
+        """
+        self.sunxi_gpio.setup(pin, self._dir_mapping[mode])
+
+    def output(self, pin, value):
+        """Set the specified pin the provided high/low value.  Value should be
+        either 1 (ON or HIGH), or 0 (OFF or LOW) or a boolean.
+        """
+        self.sunxi_gpio.output(pin, value)
+
+    def input(self, pin):
+        """Read the specified pin and return HIGH/true if the pin is pulled high,
+        or LOW/false if pulled low.
+        """
+        return self.sunxi_gpio.input(pin)
+
+    def input_pins(self, pins):
+        """Read multiple pins specified in the given list and return list of pin values
+        GPIO.HIGH/True if the pin is pulled high, or GPIO.LOW/False if pulled low.
+        """
+        # maybe sunxi has a mass read...  it would be more efficient to use it if it exists
+        return [self.sunxi_gpio.input(pin) for pin in pins]
+
+    def cleanup(self, pin=None):
+        """Clean up GPIO event detection for specific pin (not supported), or all pins if none 
+        is specified.
+        """
+        self.sunxi_gpio.cleanup()
 
 def get_platform_gpio(**keywords):
     """Attempt to return a GPIO instance for the platform which the code is being
