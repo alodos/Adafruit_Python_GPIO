@@ -72,11 +72,11 @@ class BaseGPIO(object):
         return self.input(pin) == LOW
 
 
-# Basic implementation of multiple pin methods just loops through pins and
-# processes each one individually. This is not optimal, but derived classes can
-# provide a more optimal implementation that deals with groups of pins
-# simultaneously.
-# See MCP230xx or PCF8574 classes for examples of optimized implementations.
+    # Basic implementation of multiple pin methods just loops through pins and
+    # processes each one individually. This is not optimal, but derived classes can
+    # provide a more optimal implementation that deals with groups of pins
+    # simultaneously.
+    # See MCP230xx or PCF8574 classes for examples of optimized implementations.
 
     def output_pins(self, pins):
         """Set multiple pins high or low at once.  Pins should be a dict of pin
@@ -143,7 +143,7 @@ class BaseGPIO(object):
         raise NotImplementedError
 
 
-# helper functions useful to derived classes
+    # helper functions useful to derived classes
 
     def _validate_pin(self, pin):
         # Raise an exception if pin is outside the range of allowed values.
